@@ -8,13 +8,13 @@ import shutil
 import matplotlib
 import pybullet_envs
 
-from acme.utils import loggers
-from acme.tf import networks
-from acme.tf import utils as tf2_utils
-from acme.agents.tf.d4pg import D4PG
-from acme.agents.tf.ddpg import DDPG
-from acme.agents.tf.dmpo import DistributionalMPO
-from acme import wrappers, specs, environment_loop
+# from acme.utils import loggers
+# from acme.tf import networks
+# from acme.tf import utils as tf2_utils
+# from acme.agents.tf.d4pg import D4PG
+# from acme.agents.tf.ddpg import DDPG
+# from acme.agents.tf.dmpo import DistributionalMPO
+# from acme import wrappers, specs, environment_loop
 
 import numpy as np
 import sonnet as snt
@@ -44,7 +44,7 @@ p.setAdditionalSearchPath(pybullet_data.getDataPath())
 p.resetSimulation()
 #p.createCollisionShape(p.GEOM_PLANE)
 #p.createMultiBody(0,0)
-#p.resetDebugVisualizerCamera(5,75,-26,[0,0,1]);
+p.resetDebugVisualizerCamera(5,75,-26,[0,0,1]);
 
 # set a fixed camera
 # p.resetDebugVisualizerCamera(15, -346, -16, [-15, 0, 1])
@@ -83,7 +83,7 @@ for j in range(p.getNumJoints(humanoid)):
   if (jointType == p.JOINT_PRISMATIC or jointType == p.JOINT_REVOLUTE):
     jointIds.append(j)
     paramIds.append(p.addUserDebugParameter(jointName.decode("utf-8"), -4, 4, 0))
-    
+
 p.setRealTimeSimulation(1)
 p.configureDebugVisualizer(p.COV_ENABLE_RENDERING, 1)
 
