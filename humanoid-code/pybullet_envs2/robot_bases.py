@@ -204,6 +204,62 @@ class URDFBasedRobot(XmlBasedRobot):
   def calc_potential(self):
     return 0
 
+class URDFBasedRobot2(XmlBasedRobot):
+  """
+	Base class for URDF .xml based robots.
+	"""
+
+  def __init__(self,
+               model_urdf,
+               robot_name,
+               action_dim,
+               obs_dim,
+               basePosition=[28, -20, 5],
+               baseOrientation=[0, 0, 0, 1],
+               fixed_base=False,
+               self_collision=False):
+    XmlBasedRobot.__init__(self, robot_name, action_dim, obs_dim, self_collision)
+
+    self.model_urdf = model_urdf
+    self.basePosition = basePosition
+    self.baseOrientation = baseOrientation
+    self.fixed_base = fixed_base
+
+  def reset(self, bullet_client):
+    self._p = bullet_client
+    self.ordered_joints = []
+
+    # print(os.path.join(os.path.dirname(__file__), "data", self.model_urdf))
+    # print(currentdir, parentdir)
+    print(os.path.join(pybullet_data.getDataPath(), "humanoid.urdf"))
+    if self.self_collision:
+      self.parts, self.jdict, self.ordered_joints, self.robot_body = self.addToScene(
+          self._p,
+          self._p.loadURDF(os.path.join(pybullet_data.getDataPath(), "humanoid/humanoid.urdf"),
+                           basePosition=self.basePosition,
+                           baseOrientation=self.baseOrientation,
+                           useFixedBase=self.fixed_base,
+                           flags=pybullet.URDF_USE_SELF_COLLISION | pybullet.URDF_GOOGLEY_UNDEFINED_COLORS))
+    else:
+      self.parts, self.jdict, self.ordered_joints, self.robot_body = self.addToScene(
+          self._p,
+          self._p.loadURDF(os.path.join(pybullet_data.getDataPath(), "humanoid/humanoid.urdf"),
+                           basePosition=self.basePosition,
+                           baseOrientation=self.baseOrientation,
+                           useFixedBase=self.fixed_base, flags = pybullet.URDF_GOOGLEY_UNDEFINED_COLORS))
+
+    self.robot_specific_reset(self._p)
+
+    s = self.calc_state(
+    )  # optimization: calc_state() can calculate something in self.* for calc_potential() to use
+    self.potential = self.calc_potential()
+
+    return s
+
+  def calc_potential(self):
+    return 0
+
+
 
 class SDFBasedRobot(XmlBasedRobot):
   """

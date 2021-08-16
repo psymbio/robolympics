@@ -1,4 +1,5 @@
 from robot_bases import XmlBasedRobot, MJCFBasedRobot, URDFBasedRobot
+from .robot_bases import URDFBasedRobot2
 import numpy as np
 import pybullet
 import os
@@ -90,6 +91,91 @@ class WalkerBase(MJCFBasedRobot):
       print(self.scene.timestep)
     return -self.walk_target_dist / self.scene.dt
 
+
+class WalkerBaseURDF(URDFBasedRobot2):
+
+  def __init__(self, robot_name, action_dim, obs_dim, self_collision):
+    URDFBasedRobot2.__init__(self, robot_name, action_dim, obs_dim, self_collision)
+    self.power = 0.41
+    self.camera_x = 0
+    self.start_pos_x, self.start_pos_y, self.start_pos_z = 0, 0, 0
+    self.walk_target_x = 1e3  # kilometer away
+    self.walk_target_y = 0
+    self.body_xyz = [0, 0, 0]
+
+  def robot_specific_reset(self, bullet_client):
+    self._p = bullet_client
+    for j in self.ordered_joints:
+      j.reset_current_position(self.np_random.uniform(low=-0.1, high=0.1), 0)
+
+    print(self.parts)
+    self.feet = [self.parts[f] for f in self.foot_list]
+    self.feet_contact = np.array([0.0 for f in self.foot_list], dtype=np.float32)
+    self.scene.actor_introduce(self)
+    self.initial_z = None
+
+  def apply_action(self, a):
+    assert (np.isfinite(a).all())
+    for n, j in enumerate(self.ordered_joints):
+      j.set_motor_torque(self.power * j.power_coef * float(np.clip(a[n], -1, +1)))
+
+  def calc_state(self):
+    j = np.array([j.current_relative_position() for j in self.ordered_joints],
+                 dtype=np.float32).flatten()
+    # even elements [0::2] position, scaled to -1..+1 between limits
+    # odd elements  [1::2] angular speed, scaled to show -1..+1
+    self.joint_speeds = j[1::2]
+    self.joints_at_limit = np.count_nonzero(np.abs(j[0::2]) > 0.99)
+
+    body_pose = self.robot_body.pose()
+    parts_xyz = np.array([p.pose().xyz() for p in self.parts.values()]).flatten()
+    self.body_xyz = (parts_xyz[0::3].mean(), parts_xyz[1::3].mean(), body_pose.xyz()[2]
+                    )  # torso z is more informative than mean z
+    self.body_real_xyz = body_pose.xyz()
+    self.body_rpy = body_pose.rpy()
+    z = self.body_xyz[2]
+    if self.initial_z == None:
+      self.initial_z = z
+    r, p, yaw = self.body_rpy
+    self.walk_target_theta = np.arctan2(self.walk_target_y - self.body_xyz[1],
+                                        self.walk_target_x - self.body_xyz[0])
+    self.walk_target_dist = np.linalg.norm(
+        [self.walk_target_y - self.body_xyz[1], self.walk_target_x - self.body_xyz[0]])
+    angle_to_target = self.walk_target_theta - yaw
+
+    rot_speed = np.array([[np.cos(-yaw), -np.sin(-yaw), 0], [np.sin(-yaw),
+                                                             np.cos(-yaw), 0], [0, 0, 1]])
+    vx, vy, vz = np.dot(rot_speed,
+                        self.robot_body.speed())  # rotate speed back to body point of view
+
+    more = np.array(
+        [
+            z - self.initial_z,
+            np.sin(angle_to_target),
+            np.cos(angle_to_target),
+            0.3 * vx,
+            0.3 * vy,
+            0.3 * vz,  # 0.3 is just scaling typical speed into -1..+1, no physical sense here
+            r,
+            p
+        ],
+        dtype=np.float32)
+    return np.clip(np.concatenate([more] + [j] + [self.feet_contact]), -5, +5)
+
+  def calc_potential(self):
+    # progress in potential field is speed*dt, typical speed is about 2-3 meter per second, this potential will change 2-3 per frame (not per second),
+    # all rewards have rew/frame units and close to 1.0
+    debugmode = 0
+    if (debugmode):
+      print("calc_potential: self.walk_target_dist")
+      print(self.walk_target_dist)
+      print("self.scene.dt")
+      print(self.scene.dt)
+      print("self.scene.frame_skip")
+      print(self.scene.frame_skip)
+      print("self.scene.timestep")
+      print(self.scene.timestep)
+    return -self.walk_target_dist / self.scene.dt
 
 class Hopper(WalkerBase):
   foot_list = ["foot"]
@@ -224,6 +310,80 @@ def get_sphere(_p, x, y, z):
   bodies = [body]
   return BodyPart(_p, part_name, bodies, 0, -1)
 
+class HumanoidURDF(WalkerBaseURDF):
+  self_collision = True
+  # foot_list = ["right_foot", "left_foot"]  # "left_hand", "right_hand"
+  # changed from foot to ankle
+  foot_list = ["right_ankle", "left_ankle"]
+  def __init__(self):
+    # WalkerBaseURDF.__init__(self, "humanoid.urdf","torso", action_dim=17, obs_dim=44, power=0.41)
+    WalkerBaseURDF.__init__(self, "humanoid.urdf", action_dim=17, obs_dim=44, self_collision=1)
+    # 17 joints, 4 of them important for walking (hip, knee), others may as well be turned off, 17/4 = 4.25
+
+  def robot_specific_reset(self, bullet_client):
+    WalkerBaseURDF.robot_specific_reset(self, bullet_client)
+
+    # change the motor_powers
+    self.motor_names = ["root", "chest", "neck"]
+    self.motor_power = [100, 100, 100]
+    self.motor_names += ["right_hip", "right_hip", "left_hip", "left_knee"]
+    self.motor_power += [100, 100, 300, 200]
+    self.motor_names += ["left_shoulder", "right_elbow", "left_elbow", "left_wrist"]
+    self.motor_power += [100, 100, 300, 200]
+    self.motor_names += ["right_shoulder", "left_shoulder", "right_wrist"]
+    self.motor_power += [75, 75, 75]
+    self.motor_names += ["right_knee"]
+    self.motor_power += [75]
+    self.motors = [self.jdict[n] for n in self.motor_names]
+    if self.random_yaw:
+      position = [0, 0, 0]
+      orientation = [0, 0, 0]
+      yaw = self.np_random.uniform(low=-3.14, high=3.14)
+      if self.random_lean and self.np_random.randint(2) == 0:
+        cpose.set_xyz(0, 0, 1.4)
+        if self.np_random.randint(2) == 0:
+          pitch = np.pi / 2
+          position = [0, 0, 0.45]
+        else:
+          pitch = np.pi * 3 / 2
+          position = [0, 0, 0.25]
+        roll = 0
+        orientation = [roll, pitch, yaw]
+      else:
+        position = [0, 0, 1.4]
+        orientation = [0, 0, yaw]  # just face random direction, but stay straight otherwise
+      self.robot_body.reset_position(position)
+      self.robot_body.reset_orientation(orientation)
+    self.initial_z = 0.8
+
+  random_yaw = False
+  random_lean = False
+
+  def apply_action(self, a):
+    assert (np.isfinite(a).all())
+    force_gain = 1
+    for i, m, power in zip(range(17), self.motors, self.motor_power):
+      m.set_motor_torque(float(force_gain * power * self.power * np.clip(a[i], -1, +1)))
+
+  def alive_bonus(self, z, pitch):
+    return +2 if z > 0.78 else -1  # 2 here because 17 joints produce a lot of electricity cost just from policy noise, living must be better than dying
+
+
+def get_cube(_p, x, y, z):
+  body = _p.loadURDF(os.path.join(pybullet_data.getDataPath(), "cube_small.urdf"), [x, y, z])
+  _p.changeDynamics(body, -1, mass=1.2)  #match Roboschool
+  part_name, _ = _p.getBodyInfo(body)
+  part_name = part_name.decode("utf8")
+  bodies = [body]
+  return BodyPart(_p, part_name, bodies, 0, -1)
+
+
+def get_sphere(_p, x, y, z):
+  body = _p.loadURDF(os.path.join(pybullet_data.getDataPath(), "sphere2red_nocol.urdf"), [x, y, z])
+  part_name, _ = _p.getBodyInfo(body)
+  part_name = part_name.decode("utf8")
+  bodies = [body]
+  return BodyPart(_p, part_name, bodies, 0, -1)
 
 class HumanoidFlagrun(Humanoid):
 
