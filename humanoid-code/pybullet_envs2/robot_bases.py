@@ -231,7 +231,7 @@ class URDFBasedRobot2(XmlBasedRobot):
 
     # print(os.path.join(os.path.dirname(__file__), "data", self.model_urdf))
     # print(currentdir, parentdir)
-    print(os.path.join(pybullet_data.getDataPath(), "humanoid.urdf"))
+    # print(os.path.join(pybullet_data.getDataPath(), "humanoid/humanoid.urdf"))
     if self.self_collision:
       self.parts, self.jdict, self.ordered_joints, self.robot_body = self.addToScene(
           self._p,

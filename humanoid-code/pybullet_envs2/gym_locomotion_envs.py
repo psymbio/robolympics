@@ -281,7 +281,7 @@ class WalkerBaseBulletEnv3(URDFBaseBulletEnv):
 
   def reset(self):
     if (self.stateId >= 0):
-      #print("restoreState self.stateId:",self.stateId)
+      print("restoreState self.stateId:",self.stateId)
       self._p.restoreState(self.stateId)
 
     r = URDFBaseBulletEnv.reset(self)
@@ -294,9 +294,10 @@ class WalkerBaseBulletEnv3(URDFBaseBulletEnv):
 
     self.ground_ids = set([(self.parts[f].bodies[self.parts[f].bodyIndex], self.parts[f].bodyPartIndex) for f in self.foot_ground_object_names])
     self._p.configureDebugVisualizer(pybullet.COV_ENABLE_RENDERING, 1)
+    # changed from: if (self.stateId <= 0):
     if (self.stateId < 0):
       self.stateId = self._p.saveState()
-      #print("saving state self.stateId:",self.stateId)
+      print("saving state self.stateId:",self.stateId)
 
     return r
 
