@@ -1,2 +1,0 @@
-1. how to move humanoid: check laikago_pmtg_example.py which is from bullet3/examples/pybullet/gym/pybullet_envs/minitaur/envs_v2/examples
-2. how to add models deepq: bullet3/examples/pybullet/gym/pybullet_envs/baselines train_kuka_grasping.py
