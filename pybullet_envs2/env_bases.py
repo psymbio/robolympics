@@ -1,5 +1,8 @@
 import gym, gym.spaces, gym.utils, gym.utils.seeding
 import numpy as np
+
+# changes
+import pybullet as p
 import pybullet
 import os
 
@@ -22,7 +25,8 @@ class MJCFBaseBulletEnv(gym.Env):
 
   metadata = {'render.modes': ['human', 'rgb_array'], 'video.frames_per_second': 60}
 
-  def __init__(self, robot, render=False):
+  def __init__(self, robot, render=True):
+    # changes render from False to True
     self.scene = None
     self.physicsClientId = -1
     self.ownsPhysicsClient = 0
@@ -92,7 +96,7 @@ class MJCFBaseBulletEnv(gym.Env):
     pass
 
   def render(self, mode='human', close=False):
-  
+
     if mode == "human":
       self.isRender = True
     if self.physicsClientId>=0:
@@ -167,7 +171,7 @@ class Camera:
   def move_and_look_at(self, i, j, k, x, y, z):
     lookat = [x, y, z]
     camInfo = self.env._p.getDebugVisualizerCamera()
-    
+
     distance = camInfo[10]
     pitch = camInfo[9]
     yaw = camInfo[8]

@@ -5,8 +5,11 @@ import os, inspect
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 os.sys.path.insert(0, parentdir)
-import pybullet_data
 
+
+# import pybullet_data
+# changes
+import pybullet_data2 as pybullet_data
 
 class XmlBasedRobot:
   """
