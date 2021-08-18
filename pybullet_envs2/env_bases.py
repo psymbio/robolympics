@@ -173,10 +173,12 @@ class Camera:
   def move_and_look_at(self, i, j, k, x, y, z):
     lookat = [x, y, z]
     camInfo = self.env._p.getDebugVisualizerCamera()
-    distance = camInfo[10] + 100
+    distance = camInfo[10]
     pitch = camInfo[9]
     yaw = camInfo[8]
-    self.env._p.resetDebugVisualizerCamera(distance, yaw, pitch, lookat)
+    # changes
+    lookat2 = [28, -20, 100]
+    self.env._p.resetDebugVisualizerCamera(distance, yaw, pitch, lookat2)
 
   # changes: get camera location
   def get_camera_location(self):
