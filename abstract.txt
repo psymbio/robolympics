@@ -1,0 +1,11 @@
+# Robolympics
+
+Inspired by the recent olympic games we were keen on understanding the physical kinematics of an olympic athlete while performing in these competitions. Using recent advances in deep reinforcement learning we tried to model an agent which is able to achieve performance similar to that of an olympian.
+
+The Robolympics task was based on asking questions on whether the agents could perform olympics based tasks. With the fixed environment of official Olympics track stadium settings, we wanted to model an optimal reward function which adheres to the trajectory of our track as well as their respective rules but still manages to be the fastest.
+
+Our hypothesis for this experiment is to construct an array of checkpoints which encourage our agent to respect the trajectory of our track and for the agent to traverse optimally it's essential to minimize the time taken between two checkpoints.
+
+We used various libraries to set up our simulation such as ACME for initializing the agent network, and PyBullet for initializing our custom environments. Finally, we incorporate our hypothesis into our model to get the final results.
+
+Due to time constraints, we weren't able to observe any statistically significant result that we can share but since we are well under our way of finishing and compiling our results we would like to present them as well in future. Furthermore, we hope to extend this work and look into creating multi-agent environments to compare different morphologies,and maybe even changing morphologies to understand evolution and eventually find an optimal creature to traverse an olympic track. 

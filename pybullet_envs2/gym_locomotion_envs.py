@@ -47,6 +47,7 @@ class WalkerBaseBulletEnv(MJCFBaseBulletEnv):
     return self._alive < 0
 
   def move_robot(self, init_x, init_y, init_z):
+      # can be added
     "Used by multiplayer stadium to move sideways, to another running lane."
     self.cpp_robot.query_position()
     pose = self.cpp_robot.root_part.pose()

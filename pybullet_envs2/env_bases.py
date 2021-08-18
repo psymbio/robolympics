@@ -25,7 +25,7 @@ class MJCFBaseBulletEnv(gym.Env):
 
   metadata = {'render.modes': ['human', 'rgb_array'], 'video.frames_per_second': 60}
 
-  def __init__(self, robot, render=True):
+  def __init__(self, robot, render=False):
     # changes render from False to True
     self.scene = None
     self.physicsClientId = -1
@@ -37,8 +37,10 @@ class MJCFBaseBulletEnv(gym.Env):
     self._cam_dist = 3
     self._cam_yaw = 0
     self._cam_pitch = -30
-    self._render_width = 320
-    self._render_height = 240
+
+    # changes width height
+    self._render_width = 2000
+    self._render_height = 2000
 
     self.action_space = robot.action_space
     self.observation_space = robot.observation_space
@@ -171,8 +173,12 @@ class Camera:
   def move_and_look_at(self, i, j, k, x, y, z):
     lookat = [x, y, z]
     camInfo = self.env._p.getDebugVisualizerCamera()
-
-    distance = camInfo[10]
+    distance = camInfo[10] + 100
     pitch = camInfo[9]
     yaw = camInfo[8]
     self.env._p.resetDebugVisualizerCamera(distance, yaw, pitch, lookat)
+
+  # changes: get camera location
+  def get_camera_location(self):
+      camInfo = self.env._p.getDebugVisualizerCamera()
+      return camInfo
