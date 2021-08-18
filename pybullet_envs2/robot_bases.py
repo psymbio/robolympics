@@ -11,6 +11,10 @@ os.sys.path.insert(0, parentdir)
 # changes
 import pybullet_data2 as pybullet_data
 
+def check_pybullet_path():
+    print("pybullet path now: ", pybullet_data.getDataPath())
+
+
 class XmlBasedRobot:
   """
 	Base class for mujoco .xml based agents.
@@ -121,6 +125,8 @@ class MJCFBasedRobot(XmlBasedRobot):
     XmlBasedRobot.__init__(self, robot_name, action_dim, obs_dim, self_collision)
     self.model_xml = model_xml
     self.doneLoading = 0
+    # changes
+    print("pybullet path now: ", pybullet_data.getDataPath())
 
   def reset(self, bullet_client):
 

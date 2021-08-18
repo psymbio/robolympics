@@ -18,7 +18,7 @@ class WalkerBase(MJCFBasedRobot):
     self.start_pos_x, self.start_pos_y, self.start_pos_z = 0, 0, 0
     self.walk_target_x = 1e3  # kilometer away
     self.walk_target_y = 0
-    self.body_xyz = [0, 0, 0]
+    self.body_xyz = [28, -20, 5]
 
   def robot_specific_reset(self, bullet_client):
     self._p = bullet_client
@@ -159,7 +159,7 @@ class Humanoid(WalkerBase):
     # changes
     print(pybullet_data2.getDataPath())
     WalkerBase.__init__(self,
-                        'humanoid_symmetric.xml',
+                        'humanoid_symmetric2.xml',
                         'torso',
                         action_dim=17,
                         obs_dim=44,
