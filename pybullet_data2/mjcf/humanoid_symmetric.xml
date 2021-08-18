@@ -13,7 +13,8 @@
         <map fogend="5" fogstart="3"/>
     </visual>
     <worldbody>
-        <body name="torso" pos="0 0 1.4">
+     <!--changes-->
+        <body name="torso" pos="28 -20 5">
             <!--joint armature="0" damping="0" limited="false" name="root" pos="0 0 0" stiffness="0" type="free"/-->
             <geom fromto="0 -.07 0 0 .07 0" name="torso1" size="0.07" type="capsule"/>
             <geom name="head" pos="0 0 .19" size=".09" type="sphere" user="258"/>

@@ -2,6 +2,9 @@ from robot_bases import XmlBasedRobot, MJCFBasedRobot, URDFBasedRobot
 import numpy as np
 import pybullet
 import os
+
+# changes
+# import pybullet_data2 as pybullet_data
 import pybullet_data
 from robot_bases import BodyPart
 
@@ -153,6 +156,8 @@ class Humanoid(WalkerBase):
   foot_list = ["right_foot", "left_foot"]  # "left_hand", "right_hand"
 
   def __init__(self):
+    # changes
+    print(pybullet_data2.getDataPath())
     WalkerBase.__init__(self,
                         'humanoid_symmetric.xml',
                         'torso',

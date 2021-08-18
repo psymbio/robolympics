@@ -58,7 +58,7 @@ class WalkerBaseBulletEnv(MJCFBaseBulletEnv):
   electricity_cost = -2.0  # cost for using motors -- this parameter should be carefully tuned against reward for making progress, other values less improtant
   stall_torque_cost = -0.1  # cost for running electric current through a motor even at zero rotational speed, small
   foot_collision_cost = -1.0  # touches another leg, or other objects, that cost makes robot avoid smashing feet into itself
-  foot_ground_object_names = set(["floor"])  # to distinguish ground and other objects
+  foot_ground_object_names = set(["link_d0"])  # to distinguish ground and other objects
   joints_at_limit_cost = -0.1  # discourage stuck joints
 
   def step(self, a):
