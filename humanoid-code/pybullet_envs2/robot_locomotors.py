@@ -425,6 +425,45 @@ class HumanoidFlagrun(Humanoid):
     return state
 
 
+class HumanoidFlagrunURDF(HumanoidURDF):
+
+  def __init__(self):
+    Humanoid.__init__(self)
+    self.flag = None
+
+  def robot_specific_reset(self, bullet_client):
+    Humanoid.robot_specific_reset(self, bullet_client)
+    self.flag_reposition()
+
+  def flag_reposition(self):
+    self.walk_target_x = self.np_random.uniform(low=-self.scene.stadium_halflen,
+                                                high=+self.scene.stadium_halflen)
+    self.walk_target_y = self.np_random.uniform(low=-self.scene.stadium_halfwidth,
+                                                high=+self.scene.stadium_halfwidth)
+    more_compact = 0.5  # set to 1.0 whole football field
+    self.walk_target_x *= more_compact
+    self.walk_target_y *= more_compact
+
+    if (self.flag):
+      #for b in self.flag.bodies:
+      #	print("remove body uid",b)
+      #	p.removeBody(b)
+      self._p.resetBasePositionAndOrientation(self.flag.bodies[0],
+                                              [self.walk_target_x, self.walk_target_y, 0.7],
+                                              [0, 0, 0, 1])
+    else:
+      self.flag = get_sphere(self._p, self.walk_target_x, self.walk_target_y, 0.7)
+    self.flag_timeout = 600 / self.scene.frame_skip  #match Roboschool
+
+  def calc_state(self):
+    self.flag_timeout -= 1
+    state = Humanoid.calc_state(self)
+    if self.walk_target_dist < 1 or self.flag_timeout <= 0:
+      self.flag_reposition()
+      state = Humanoid.calc_state(self)  # caclulate state again, against new flag pos
+      self.potential = self.calc_potential()  # avoid reward jump
+    return state
+
 class HumanoidFlagrunHarder(HumanoidFlagrun):
 
   def __init__(self):

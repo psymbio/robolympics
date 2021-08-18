@@ -3,7 +3,7 @@ from .env_bases import MJCFBaseBulletEnv, URDFBaseBulletEnv
 import numpy as np
 import pybullet
 from robot_locomotors import Hopper, Walker2D, HalfCheetah, Ant, Humanoid, HumanoidFlagrun, HumanoidFlagrunHarder
-from .robot_locomotors import HumanoidURDF
+from .robot_locomotors import HumanoidURDF, HumanoidFlagrunURDF
 
 
 class WalkerBaseBulletEnv(MJCFBaseBulletEnv):
@@ -27,8 +27,8 @@ class WalkerBaseBulletEnv(MJCFBaseBulletEnv):
 
   def reset(self):
     if (self.stateId >= 0):
-      #print("restoreState self.stateId:",self.stateId)
-      self._p.restoreState(self.stateId)
+        print("restoreState self.stateId:",self.stateId)
+        self._p.restoreState(self.stateId)
 
     r = MJCFBaseBulletEnv.reset(self)
     self._p.configureDebugVisualizer(pybullet.COV_ENABLE_RENDERING, 0)
@@ -463,6 +463,18 @@ class HumanoidFlagrunBulletEnv(HumanoidBulletEnv):
 
   def create_single_player_scene(self, bullet_client):
     s = HumanoidBulletEnv.create_single_player_scene(self, bullet_client)
+    s.zero_at_running_strip_start_line = False
+    return s
+
+class HumanoidFlagrunBulletEnvURDF(HumanoidBulletEnv3):
+  random_yaw = True
+
+  def __init__(self, render=False):
+    self.robot = HumanoidFlagrunURDF()
+    HumanoidBulletEnv3.__init__(self, self.robot, render)
+
+  def create_single_player_scene(self, bullet_client):
+    s = HumanoidBulletEnv3.create_single_player_scene(self, bullet_client)
     s.zero_at_running_strip_start_line = False
     return s
 
