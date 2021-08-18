@@ -1,5 +1,6 @@
 from robot_bases import XmlBasedRobot, MJCFBasedRobot, URDFBasedRobot
 import numpy as np
+import pybullet as _p
 import pybullet
 import os
 
@@ -8,6 +9,36 @@ import os
 import pybullet_data
 from robot_bases import BodyPart
 
+# changes: add checkpoints
+import numpy as np
+checkpoints_stadium = np.array([[36.90058899,  -3.27299237],
+       [ 29.98545074, -15.73727989],
+       [ 25.98292923,  19.71592522],
+       [ 36.00297928,   7.93183422],
+       [-36.00297928,  -6.91670513],
+       [-28.69959831,  17.92435074],
+       [-34.2795639 ,  11.62551594],
+       [ 37.12164688,   2.41725087],
+       [-32.95801163, -12.49569416],
+       [-36.90058899,   4.28812122],
+       [ 35.49053192,  -7.93686962],
+       [ 26.26033592, -18.4656353 ],
+       [-17.51765633,  22.4084053 ],
+       [ 33.36088181, -11.92537308],
+       [-23.28717995,  20.93785286],
+       [-37.12164688,  -1.40212178],
+       [ 24.69773293, -19.26901054],
+       [ 30.10389709,  16.65581703],
+       [-28.98753738, -16.69599724],
+       [ 32.958004  ,  13.51084328],
+       [-24.59379959, -19.27071381],
+       [ 18.29857635,  22.3815155 ],
+       [ 17.46794701, -21.23395348],
+       [-20.45232391, -20.74229622],
+       [-17.62427711, -21.17273331],
+       [ 23.09788132, -19.88587952],
+       [-16.22319412, -21.3013134 ],
+       [-26.827631  , -21.17273331]])
 
 class WalkerBase(MJCFBasedRobot):
 
@@ -223,6 +254,8 @@ def get_cube(_p, x, y, z):
 
 
 def get_sphere(_p, x, y, z):
+  _p.connect(_p.DIRECT)
+  # changed from x, y, z -> 28, -20, 5
   body = _p.loadURDF(os.path.join(pybullet_data.getDataPath(), "sphere2red_nocol.urdf"), [x, y, z])
   part_name, _ = _p.getBodyInfo(body)
   part_name = part_name.decode("utf8")
@@ -240,22 +273,26 @@ class HumanoidFlagrun(Humanoid):
     Humanoid.robot_specific_reset(self, bullet_client)
     self.flag_reposition()
 
-  def flag_reposition(self):
-    self.walk_target_x = self.np_random.uniform(low=-self.scene.stadium_halflen,
-                                                high=+self.scene.stadium_halflen)
-    self.walk_target_y = self.np_random.uniform(low=-self.scene.stadium_halfwidth,
-                                                high=+self.scene.stadium_halfwidth)
-    more_compact = 0.5  # set to 1.0 whole football field
-    self.walk_target_x *= more_compact
-    self.walk_target_y *= more_compact
+  def flag_reposition(self, x_index, y_index):
+    # self.walk_target_x = self.np_random.uniform(low=-self.scene.stadium_halflen,
+    #                                             high=+self.scene.stadium_halflen)
+    # self.walk_target_y = self.np_random.uniform(low=-self.scene.stadium_halfwidth,
+    #                                             high=+self.scene.stadium_halfwidth)
+    # more_compact = 0.5  # set to 1.0 whole football field
+    # self.walk_target_x *= more_compact
+    # self.walk_target_y *= more_compact
+    self.walk_target_x = checkpoints_stadium[x_index, y_index]
+    self.walk_target_y = checkpoints_stadium[x_index, y_index+1]
+
 
     if (self.flag):
-      #for b in self.flag.bodies:
-      #	print("remove body uid",b)
-      #	p.removeBody(b)
+      for b in self.flag.bodies:
+      	print("remove body uid",b)
+      	# p.removeBody(b)
       self._p.resetBasePositionAndOrientation(self.flag.bodies[0],
                                               [self.walk_target_x, self.walk_target_y, 0.7],
                                               [0, 0, 0, 1])
+      self.flag = get_sphere(self._p, self.walk_target_x, self.walk_target_y, 0.7)
     else:
       self.flag = get_sphere(self._p, self.walk_target_x, self.walk_target_y, 0.7)
     self.flag_timeout = 600 / self.scene.frame_skip  #match Roboschool

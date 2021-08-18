@@ -34,13 +34,13 @@ class MJCFBaseBulletEnv(gym.Env):
     self.isRender = render
     self.robot = robot
     self.seed()
-    self._cam_dist = 100
-    self._cam_yaw = 0
+    self._cam_dist = 40 # before 40
+    self._cam_yaw = -30 # before 0
     self._cam_pitch = -30
 
     # changes width height
-    self._render_width = 2000
-    self._render_height = 2000
+    self._render_width = 600
+    self._render_height = 400
 
     self.action_space = robot.action_space
     self.observation_space = robot.observation_space
