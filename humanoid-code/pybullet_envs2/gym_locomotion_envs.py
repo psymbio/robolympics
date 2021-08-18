@@ -283,6 +283,7 @@ class WalkerBaseBulletEnv3(URDFBaseBulletEnv):
     if (self.stateId >= 0):
       print("restoreState self.stateId:",self.stateId)
       self._p.restoreState(self.stateId)
+      # changed from: self._p.restoreState(self.stateId)
 
     r = URDFBaseBulletEnv.reset(self)
     self._p.configureDebugVisualizer(pybullet.COV_ENABLE_RENDERING, 0)
