@@ -1,5 +1,9 @@
 import gym, gym.spaces, gym.utils, gym.utils.seeding
 import numpy as np
+
+# changes
+import pybullet as p
+import pybullet as _p
 import pybullet
 import os
 
@@ -13,10 +17,6 @@ try:
 except:
   pass
 
-
-import pybullet as _p
-_p.connect(_p.DIRECT)
-
 class MJCFBaseBulletEnv(gym.Env):
   """
 	Base class for Bullet physics simulation loading MJCF (MuJoCo .xml) environments in a Scene.
@@ -27,6 +27,7 @@ class MJCFBaseBulletEnv(gym.Env):
   metadata = {'render.modes': ['human', 'rgb_array'], 'video.frames_per_second': 60}
 
   def __init__(self, robot, render=False):
+    # changes render from False to True
     self.scene = None
     self.physicsClientId = -1
     self.ownsPhysicsClient = 0
@@ -34,11 +35,13 @@ class MJCFBaseBulletEnv(gym.Env):
     self.isRender = render
     self.robot = robot
     self.seed()
-    self._cam_dist = 70 # 20
-    self._cam_yaw = 0 # 0
-    self._cam_pitch = -20 # -30
-    self._render_width = 520 # 320
-    self._render_height = 440 # 240
+    self._cam_dist = 40 # before 40
+    self._cam_yaw = -30 # before 0
+    self._cam_pitch = -30
+
+    # changes width height
+    self._render_width = 600
+    self._render_height = 400
 
     self.action_space = robot.action_space
     self.observation_space = robot.observation_space
@@ -163,16 +166,27 @@ class MJCFBaseBulletEnv(gym.Env):
 
 
 class Camera:
+
   def __init__(self, env):
     self.env = env
     pass
 
   def move_and_look_at(self, i, j, k, x, y, z):
-    _p.connect(_p.DIRECT)
     lookat = [x, y, z]
-    camInfo = self.env._p.getDebugVisualizerCamera()
+    # changes
+    # physicsClient = self.env._p.connect(_p.GUI)
+    # camInfo = self.env._p.getDebugVisualizerCamera()
+    # distance = camInfo[10]
+    # pitch = camInfo[9]
+    # yaw = camInfo[8]
+    distance = 40
+    yaw = -30
+    pitch = -30
+    # changes
+    lookat2 = [28, -20, 100]
+    self.env._p.resetDebugVisualizerCamera(distance, yaw, pitch, lookat2)
 
-    distance = camInfo[10]
-    pitch = camInfo[9]
-    yaw = camInfo[8]
-    self.env._p.resetDebugVisualizerCamera(distance, yaw, pitch, lookat)
+  # changes: get camera location
+  def get_camera_location(self):
+      camInfo = self.env._p.getDebugVisualizerCamera()
+      return camInfo
