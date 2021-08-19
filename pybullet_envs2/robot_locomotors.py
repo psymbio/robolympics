@@ -6,7 +6,7 @@ import os
 
 # changes
 # import pybullet_data2 as pybullet_data
-import pybullet_data
+import pybullet_data2 as pybullet_data
 from robot_bases import BodyPart
 
 # changes: add checkpoints
@@ -245,11 +245,17 @@ class Humanoid(WalkerBase):
 
 
 def get_cube(_p, x, y, z):
+  _p.connect(_p.DIRECT)
+  print("cube at:", x, y, z)
   body = _p.loadURDF(os.path.join(pybullet_data.getDataPath(), "cube_small.urdf"), [x, y, z])
   _p.changeDynamics(body, -1, mass=1.2)  #match Roboschool
   part_name, _ = _p.getBodyInfo(body)
   part_name = part_name.decode("utf8")
   bodies = [body]
+  # cube = _p.loadURDF(os.path.join(pybullet_data.getDataPath(), "teddy_large.urdf"), [0, 0, 0])
+  # cubeStartPos = [0,0,1]
+  # cubeStartOrientation = _p.getQuaternionFromEuler([0,0,0])
+  # boxId = _p.loadURDF(os.path.join(pybullet_data.getDataPath(), "r2d2.urdf"),cubeStartPos, cubeStartOrientation)
   return BodyPart(_p, part_name, bodies, 0, -1)
 
 
@@ -273,7 +279,7 @@ class HumanoidFlagrun(Humanoid):
     Humanoid.robot_specific_reset(self, bullet_client)
     self.flag_reposition()
 
-  def flag_reposition(self, x_index, y_index):
+  def flag_reposition(self,row, column):
     # self.walk_target_x = self.np_random.uniform(low=-self.scene.stadium_halflen,
     #                                             high=+self.scene.stadium_halflen)
     # self.walk_target_y = self.np_random.uniform(low=-self.scene.stadium_halfwidth,
@@ -281,8 +287,8 @@ class HumanoidFlagrun(Humanoid):
     # more_compact = 0.5  # set to 1.0 whole football field
     # self.walk_target_x *= more_compact
     # self.walk_target_y *= more_compact
-    self.walk_target_x = checkpoints_stadium[x_index, y_index]
-    self.walk_target_y = checkpoints_stadium[x_index, y_index+1]
+    self.walk_target_x = checkpoints_stadium[row, column]
+    self.walk_target_y = checkpoints_stadium[row, column + 1]
 
 
     if (self.flag):
@@ -301,7 +307,8 @@ class HumanoidFlagrun(Humanoid):
     self.flag_timeout -= 1
     state = Humanoid.calc_state(self)
     if self.walk_target_dist < 1 or self.flag_timeout <= 0:
-      self.flag_reposition()
+      # changes 
+      # self.flag_reposition()
       state = Humanoid.calc_state(self)  # caclulate state again, against new flag pos
       self.potential = self.calc_potential()  # avoid reward jump
     return state
@@ -340,10 +347,12 @@ class HumanoidFlagrunHarder(HumanoidFlagrun):
           low=20.0, high=30.0)  # speed 20..30 (* mass in cube.urdf = impulse)
       time_to_travel = from_dist / attack_speed
       target_xyz += robot_speed * time_to_travel  # predict future position at the moment the cube hits the robot
-      position = [
-          target_xyz[0] + from_dist * np.cos(angle), target_xyz[1] + from_dist * np.sin(angle),
-          target_xyz[2] + 1.0
-      ]
+      # position = [
+      #     target_xyz[0] + from_dist * np.cos(angle), target_xyz[1] + from_dist * np.sin(angle),
+      #     target_xyz[2] + 1.0
+      # ]
+      # changes: target postion
+      position = [checkpoints_stadium[0, 0], checkpoints_stadium[0, 1], 0.7]
       attack_speed_vector = target_xyz - np.array(position)
       attack_speed_vector *= attack_speed / np.linalg.norm(attack_speed_vector)
       attack_speed_vector += self.np_random.uniform(low=-1.0, high=+1.0, size=(3,))
