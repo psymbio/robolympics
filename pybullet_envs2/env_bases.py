@@ -3,6 +3,7 @@ import numpy as np
 
 # changes
 import pybullet as p
+import pybullet as _p
 import pybullet
 import os
 
@@ -172,10 +173,15 @@ class Camera:
 
   def move_and_look_at(self, i, j, k, x, y, z):
     lookat = [x, y, z]
-    camInfo = self.env._p.getDebugVisualizerCamera()
-    distance = camInfo[10]
-    pitch = camInfo[9]
-    yaw = camInfo[8]
+    # changes
+    # physicsClient = self.env._p.connect(_p.GUI)
+    # camInfo = self.env._p.getDebugVisualizerCamera()
+    # distance = camInfo[10]
+    # pitch = camInfo[9]
+    # yaw = camInfo[8]
+    distance = 40
+    yaw = -30
+    pitch = -30
     # changes
     lookat2 = [28, -20, 100]
     self.env._p.resetDebugVisualizerCamera(distance, yaw, pitch, lookat2)
